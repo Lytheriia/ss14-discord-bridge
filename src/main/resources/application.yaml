@@ -10,7 +10,7 @@ spring:
       enabled: true
 
   datasource:
-    url: jdbc:postgresql://postgres:7777/${POSTGRES_DB}
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
 
@@ -20,8 +20,10 @@ spring:
 internal:
   api:
     key: ${INTERNAL_API_KEY}
-    allowed-ips: ${API_ALLOWED_IPS:}
-    
+
+api:
+  allowed-ips: ${API_ALLOWED_IPS:}
+
 server:
   port: ${BACKEND_PORT:8080}
 

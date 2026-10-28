@@ -1,15 +1,15 @@
 ### ================== Java ================== ###
 
-backend/HELP.md
+HELP.md
 
 # Outputs
 *.class
 *.jar
 
 target/
-backend/.mvn/wrapper/maven-wrapper.jar
-!**/backend/src/main/**/target/
-!**/backend/src/test/**/target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
 ### STS ###
 .apt_generated
@@ -24,7 +24,15 @@ backend/.mvn/wrapper/maven-wrapper.jar
 ### ================== Shared ================== ###
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/java-formatter.xml
+.claude/
+CLAUDE.md
+study-roadmap.md
 
 # Logs
 *.log

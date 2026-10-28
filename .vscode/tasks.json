@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "deps up",
+      "type": "shell",
+      "command": "docker compose up -d postgres redis",
+      "problemMatcher": []
+    },
+    {
+      "label": "compile",
+      "type": "shell",
+      "command": "./mvnw -q compile",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "test",
+      "type": "shell",
+      "command": "./mvnw test",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "package",
+      "type": "shell",
+      "command": "./mvnw package -DskipTests",
+      "problemMatcher": []
+    }
+  ]
+}

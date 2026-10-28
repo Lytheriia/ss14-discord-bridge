@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "sonarsource.sonarlint-vscode",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-containers",
+    "github.vscode-github-actions",
+    "editorconfig.editorconfig",
+    "usernamehw.errorlens",
+    "eamodio.gitlens",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg"
+  ],
+  "unwantedRecommendations": [
+    "oracle.oracle-java",
+    "slava0135.robust-yaml",
+    "ertanic.robust-lsp",
+    "ms-dotnettools.csdevkit"
+  ]
+}

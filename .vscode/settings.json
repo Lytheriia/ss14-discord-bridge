@@ -1,0 +1,41 @@
+{
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "/usr/lib/jvm/java-21-openjdk",
+      "default": true
+    }
+  ],
+
+  "java.format.settings.url": ".vscode/java-formatter.xml",
+  "java.format.settings.profile": "bridge",
+  "java.cleanup.actions": ["addOverride", "invertEquals", "instanceofPatternMatch"],
+  "java.compile.nullAnalysis.mode": "automatic",
+
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java",
+    "editor.tabSize": 4,
+    "editor.rulers": [120],
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+
+  "files.associations": {
+    ".env.*": "dotenv"
+  },
+  "files.exclude": {
+    "**/target": true
+  },
+  "search.exclude": {
+    "**/target": true,
+    ".mvn/wrapper/*.jar": true
+  }
+}

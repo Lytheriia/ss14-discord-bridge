@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Bot (local)",
+      "request": "launch",
+      "mainClass": "lytheriia.bot.BotApplication",
+      "projectName": "bot",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "SPRING_DATA_REDIS_HOST": "localhost",
+        "SPRING_DATA_REDIS_PORT": "6379"
+      },
+      "preLaunchTask": "deps up"
+    }
+  ]
+}

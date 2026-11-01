@@ -2,7 +2,9 @@ package lytheriia.bot.db.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +57,36 @@ public class BoostySubscriberService {
         for (BoostySubscriptionEntity subscriptionEntity : subscriptions) {
             subscriptionEntity.end();
         }
+    }
+
+    @Transactional
+    public void ensureUserSubscription(long discordId, List<Integer> currentRanks, long promotedBy) {
+
+        List<BoostySubscriptionEntity> currentSubscriptions = subscriptionRepository
+                .findByDiscordIdAndEndedAtIsNull(discordId);
+
+        Set<Integer> activeRanks = currentSubscriptions.stream()
+                .map(BoostySubscriptionEntity::getRank)
+                .collect(Collectors.toSet());
+
+        for (Integer rank : currentRanks) {
+            if (!activeRanks.contains(rank)) {
+                subscriptionRepository.save(new BoostySubscriptionEntity(discordId, promotedBy, rank));
+            }
+        }
+
+        for (BoostySubscriptionEntity subscription : currentSubscriptions) {
+            if (!currentRanks.contains(subscription.getRank())) {
+                subscription.end();
+            }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Set<Long> findActiveDiscordIds() {
+        return subscriptionRepository.findByEndedAtIsNull().stream()
+                .map(BoostySubscriptionEntity::getDiscordId)
+                .collect(Collectors.toSet());
     }
 
     private void archive(BoostySubscriptionEntity active) {

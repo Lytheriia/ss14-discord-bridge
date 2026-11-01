@@ -14,4 +14,6 @@ public interface BoostySubscriptionRepository extends JpaRepository<BoostySubscr
     Optional<BoostySubscriptionEntity> findTopByDiscordIdAndEndedAtIsNullOrderByRankDesc(long discordId);
 
     List<BoostySubscriptionEntity> findByDiscordIdAndEndedAtIsNull(long discordId);
+
+    List<BoostySubscriptionEntity> findByEndedAtIsNull();
 }

@@ -1,7 +1,6 @@
 package lytheriia.bot.discord.listeners;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,15 +43,7 @@ public class BoostyRoleListener extends ListenerAdapter {
             DiscordProperties props) {
         this.accountService = accountService;
         this.boostyService = boostyService;
-
-        List<Long> roles = props.getRoles().getBoosty();
-        Map<Integer, Long> rolesByTier = new HashMap<>();
-
-        for (int i = 0; i < roles.size(); i++) {
-            rolesByTier.put(i + 1, roles.get(i));
-        }
-
-        this.boosterRoleIds = Map.copyOf(rolesByTier);
+        this.boosterRoleIds = props.getRoles().boostyRolesByTier();
 
         if (boosterRoleIds.isEmpty()) {
             log.warn("DISCORD_BOOSTY_ROLES is empty: Boosty roles will not be tracked");

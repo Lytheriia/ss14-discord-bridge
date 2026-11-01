@@ -31,6 +31,8 @@
 - **Account linking**: players get a one-time code in the game lobby and link their Discord account
   through a button and modal.
 - **Role sync**: verified, server booster and Boosty roles are tracked in the database and exposed to the game server.
+- **Boosty reconciliation**: an hourly job compares active Boosty subscriptions with Discord roles
+  and fixes any differences, including changes made while the bot was offline.
 - **Server presence**: the bot status shows online players, round time and map, refreshed every 30 seconds.
 - **Round statistics**: player count snapshots are stored and rendered as charts with `/stats`.
 - **Command permissions**: admins can grant specific commands to roles.

@@ -18,6 +18,8 @@ import lytheriia.bot.db.service.DiscordAccountInfoService;
 import lytheriia.bot.properties.DiscordProperties;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
@@ -65,11 +67,20 @@ public class BoostyRoleListener extends ListenerAdapter {
         }
 
         long discordId = event.getUser().getIdLong();
+        Guild guild = event.getGuild();
 
         resolveResponsibleId(
-                event.getGuild().retrieveAuditLogs().type(ActionType.MEMBER_ROLE_UPDATE),
+                guild.retrieveAuditLogs().type(ActionType.MEMBER_ROLE_UPDATE),
                 discordId,
                 promotedBy -> ranks.forEach(rank -> {
+                    Member member = guild.getMemberById(discordId);
+
+                    if (member == null)
+                        return;
+
+                    if (!hasRole(member, boosterRoleIds.get(rank)))
+                        return;
+
                     try {
                         boostyService.subscribe(discordId, promotedBy, rank);
                     } catch (Exception e) {
@@ -140,5 +151,9 @@ public class BoostyRoleListener extends ListenerAdapter {
             log.warn("Could not read audit log (missing VIEW_AUDIT_LOG?): {}", error.getMessage());
             callback.accept(fallbackId);
         });
+    }
+
+    private static boolean hasRole(Member member, long roleId) {
+        return member.getRoles().stream().anyMatch(r -> r.getIdLong() == roleId);
     }
 }

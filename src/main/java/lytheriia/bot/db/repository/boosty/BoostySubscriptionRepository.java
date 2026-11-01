@@ -1,5 +1,6 @@
 package lytheriia.bot.db.repository.boosty;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,6 @@ public interface BoostySubscriptionRepository extends JpaRepository<BoostySubscr
     Optional<BoostySubscriptionEntity> findByDiscordIdAndRankAndEndedAtIsNull(long discordId, int rank);
 
     Optional<BoostySubscriptionEntity> findTopByDiscordIdAndEndedAtIsNullOrderByRankDesc(long discordId);
+
+    List<BoostySubscriptionEntity> findByDiscordIdAndEndedAtIsNull(long discordId);
 }

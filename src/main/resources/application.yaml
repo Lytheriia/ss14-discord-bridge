@@ -31,13 +31,10 @@ discord:
   token: ${DISCORD_TOKEN}
   guild-id: ${DISCORD_GUILD_ID}
   roles:
-    verified: 1359900955596034271
-    booster: 1359980717387550893
-    boosty:
-      1: 1551897052340953128
-      2: 1551897127955857448
-      3: 1551897189330980977
-  developer-id: 431760864631324674
+    verified: ${DISCORD_VERIFIED_ROLE_ID}
+    booster: ${DISCORD_BOOSTER_ROLE_ID}
+    boosty: ${DISCORD_BOOSTY_ROLES:}
+  developer-id: ${DISCORD_MAINTAINER_ID}
 
 management:
   endpoints:

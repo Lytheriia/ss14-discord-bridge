@@ -1,6 +1,7 @@
 package lytheriia.bot.discord.listeners;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ import lytheriia.bot.properties.DiscordProperties;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -40,7 +42,19 @@ public class BoostyRoleListener extends ListenerAdapter {
             DiscordProperties props) {
         this.accountService = accountService;
         this.boostyService = boostyService;
-        this.boosterRoleIds = Map.copyOf(props.getRoles().getBoosty());
+
+        List<Long> roles = props.getRoles().getBoosty();
+        Map<Integer, Long> rolesByTier = new HashMap<>();
+
+        for (int i = 0; i < roles.size(); i++) {
+            rolesByTier.put(i + 1, roles.get(i));
+        }
+
+        this.boosterRoleIds = Map.copyOf(rolesByTier);
+
+        if (boosterRoleIds.isEmpty()) {
+            log.warn("DISCORD_BOOSTY_ROLES is empty: Boosty roles will not be tracked");
+        }
     }
 
     @Override
@@ -62,6 +76,17 @@ public class BoostyRoleListener extends ListenerAdapter {
                         log.error("Failed to subscribe discordId={} rank={}", discordId, rank, e);
                     }
                 }));
+    }
+
+    @Override
+    public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
+        long discordId = event.getUser().getIdLong();
+
+        try {
+            boostyService.unsubscribeAll(discordId);
+        } catch (Exception e) {
+            log.error("Failed to unsubscribe discordId={} on leave", discordId, e);
+        }
     }
 
     @Override
@@ -115,9 +140,5 @@ public class BoostyRoleListener extends ListenerAdapter {
             log.warn("Could not read audit log (missing VIEW_AUDIT_LOG?): {}", error.getMessage());
             callback.accept(fallbackId);
         });
-    }
-
-    public Map<Integer, Long> getBoosterRoleId() {
-        return boosterRoleIds;
     }
 }

@@ -115,23 +115,25 @@ Never edit a migration that has already been applied; add a new `V<n>__*.sql` in
 
 All settings are read from environment variables (see `.env.example`).
 
-| Variable            | Description                                                              |
-| ------------------- | ------------------------------------------------------------------------ |
-| `DISCORD_TOKEN`     | Bot token                                                                |
-| `DISCORD_GUILD_ID`  | The only guild the bot stays in                                          |
-| `INTERNAL_API_KEY`  | Shared secret for the internal API                                       |
-| `API_PORT`          | API port                                                                 |
-| `API_BIND_HOST`     | `127.0.0.1` if the game server is on the same machine, else `0.0.0.0`    |
-| `API_ALLOWED_IPS`   | Comma-separated IPs allowed to call the API; required with `0.0.0.0`     |
-| `SS14_SERVER_IP`    | `host:port` of the game server, used for the `/status` presence          |
-| `POSTGRES_DB`       | Database name                                                            |
-| `POSTGRES_USER`     | Database user                                                            |
-| `POSTGRES_PASSWORD` | Database password                                                        |
-| `POSTGRES_PORT`     | Postgres port exposed on `127.0.0.1`                                     |
-| `POSTGRES_DATA_DIR` | Host directory with the Postgres data (default `~/erida-bot`)            |
-| `REDIS_PORT`        | Redis port exposed on `127.0.0.1`                                        |
-
-Role IDs (verified, booster, Boosty tiers) are set in `src/main/resources/application.yaml`.
+| Variable                   | Description                                                           |
+| -------------------------- | --------------------------------------------------------------------- |
+| `DISCORD_TOKEN`            | Bot token                                                             |
+| `DISCORD_GUILD_ID`         | The only guild the bot stays in                                       |
+| `DISCORD_MAINTAINER_ID`    | Discord user ID allowed to run developer-only commands                |
+| `DISCORD_VERIFIED_ROLE_ID` | ID of the role given to verified members                              |
+| `DISCORD_BOOSTER_ROLE_ID`  | ID of the server booster role                                         |
+| `DISCORD_BOOSTY_ROLES`     | Boosty tier role IDs, comma-separated, lowest tier first; append only |
+| `INTERNAL_API_KEY`         | Shared secret for the internal API                                    |
+| `API_PORT`                 | API port                                                              |
+| `API_BIND_HOST`            | `127.0.0.1` if the game server is on the same machine, else `0.0.0.0` |
+| `API_ALLOWED_IPS`          | Comma-separated IPs allowed to call the API; required with `0.0.0.0`  |
+| `SS14_SERVER_IP`           | `host:port` of the game server, used for the `/status` presence       |
+| `POSTGRES_DB`              | Database name                                                         |
+| `POSTGRES_USER`            | Database user                                                         |
+| `POSTGRES_PASSWORD`        | Database password                                                     |
+| `POSTGRES_PORT`            | Postgres port exposed on `127.0.0.1`                                  |
+| `POSTGRES_DATA_DIR`        | Host directory with the Postgres data (default `~/erida-bot`)         |
+| `REDIS_PORT`               | Redis port exposed on `127.0.0.1`                                     |
 
 </details>
 

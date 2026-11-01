@@ -1,7 +1,7 @@
 package lytheriia.bot.properties;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -49,7 +49,7 @@ public class DiscordProperties {
     public static class Roles {
         private Long verified;
         private Long booster;
-        private Map<Integer, Long> boosty = new HashMap<>();
+        private List<Long> boosty = new ArrayList<>();
 
         public Long getVerified() {
             return verified;
@@ -67,12 +67,13 @@ public class DiscordProperties {
             this.booster = booster;
         }
 
-        public Map<Integer, Long> getBoosty() {
+        public List<Long> getBoosty() {
             return boosty;
         }
 
-        public void setBoosty(Map<Integer, Long> boosty) {
+        public void setBoosty(List<Long> boosty) {
             this.boosty = boosty;
         }
+
     }
 }

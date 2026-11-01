@@ -1,5 +1,6 @@
 package lytheriia.bot.db.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +45,16 @@ public class BoostySubscriberService {
     public void unsubscribe(long discordId, int rank) {
         subscriptionRepository.findByDiscordIdAndRankAndEndedAtIsNull(discordId, rank)
                 .ifPresent(this::archive);
+    }
+
+    @Transactional
+    public void unsubscribeAll(long discordId) {
+        List<BoostySubscriptionEntity> subscriptions = subscriptionRepository
+                .findByDiscordIdAndEndedAtIsNull(discordId);
+
+        for (BoostySubscriptionEntity subscriptionEntity : subscriptions) {
+            subscriptionEntity.end();
+        }
     }
 
     private void archive(BoostySubscriptionEntity active) {

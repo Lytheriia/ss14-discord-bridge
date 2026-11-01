@@ -12,66 +12,62 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "active_boosty_subscriber")
-public class ActiveBoostySubscriberEntity {
+@Table(name = "boosty_subscription")
+public class BoostySubscriptionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, name = "discord_id")
+    @Column(nullable = false)
     private long discordId;
 
+    @Column(nullable = false)
     private long promotedById;
 
+    @Column(nullable = false)
     private int rank;
 
     @CreationTimestamp
     private Instant startedAt;
 
-    protected ActiveBoostySubscriberEntity() {
+    @Column
+    private Instant endedAt;
+
+    protected BoostySubscriptionEntity() {
     }
 
-    public ActiveBoostySubscriberEntity(long discordId, long promotedById, int rank) {
+    public BoostySubscriptionEntity(long discordId, long promotedById, int rank) {
         this.discordId = discordId;
         this.promotedById = promotedById;
         this.rank = rank;
     }
 
-    public long getDiscordId() {
-        return discordId;
-    }
-
-    public void setDiscordId(long discordId) {
-        this.discordId = discordId;
-    }
-
-    public long getPromotedById() {
-        return promotedById;
-    }
-
-    public void setPromotedById(long promotedById) {
-        this.promotedById = promotedById;
-    }
-
-    public int getRank() {
-        return rank;
-    }
-
-    public void setRank(int rank) {
-        this.rank = rank;
-    }
-
-    public Instant getStartedAt() {
-        return startedAt;
-    }
-
-    public void setStartedAt(Instant startedAt) {
-        this.startedAt = startedAt;
+    public void end() {
+        this.endedAt = Instant.now();
     }
 
     public Long getId() {
         return id;
     }
 
+    public long getDiscordId() {
+        return discordId;
+    }
+
+    public long getPromotedById() {
+        return promotedById;
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public Instant getStartedAt() {
+        return startedAt;
+    }
+
+    public Instant getEndedAt() {
+        return endedAt;
+    }
 }

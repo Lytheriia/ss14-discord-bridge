@@ -4,65 +4,49 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.transaction.Transactional;
-import lytheriia.bot.db.entity.DiscordLinkedAccountEntity;
-import lytheriia.bot.db.entity.boosty.ActiveBoostySubscriberEntity;
-import lytheriia.bot.db.entity.boosty.ExpiredBoostySubscriberEntity;
+import lytheriia.bot.db.entity.boosty.BoostySubscriptionEntity;
 import lytheriia.bot.db.repository.DiscordLinkRepository;
-import lytheriia.bot.db.repository.boosty.ActiveBoostySubscriberRepository;
-import lytheriia.bot.db.repository.boosty.ExpiredBoostySubscriberRepository;
+import lytheriia.bot.db.repository.boosty.BoostySubscriptionRepository;
 
 @Service
 public class BoostySubscriberService {
 
-    private final ActiveBoostySubscriberRepository activeRepository;
-    private final ExpiredBoostySubscriberRepository expiredRepository;
+    private final BoostySubscriptionRepository subscriptionRepository;
     private final DiscordLinkRepository discordLinkRepository;
 
-    public BoostySubscriberService(ActiveBoostySubscriberRepository activeRepository,
-            ExpiredBoostySubscriberRepository expiredRepository, DiscordLinkRepository discordLinkRepository) {
-        this.activeRepository = activeRepository;
-        this.expiredRepository = expiredRepository;
+    public BoostySubscriberService(BoostySubscriptionRepository subscriptionRepository,
+            DiscordLinkRepository discordLinkRepository) {
+        this.subscriptionRepository = subscriptionRepository;
         this.discordLinkRepository = discordLinkRepository;
     }
 
-    @Transactional()
-    public Optional<ActiveBoostySubscriberEntity> findActiveByUser(UUID ss14UserId) {
+    @Transactional(readOnly = true)
+    public Optional<BoostySubscriptionEntity> findActiveByUser(UUID ss14UserId) {
         return discordLinkRepository.findBySs14UserId(ss14UserId)
-                .flatMap(link -> activeRepository
-                        .findTopByDiscordIdOrderByRankDesc(link.getDiscordId()));
+                .flatMap(link -> subscriptionRepository
+                        .findTopByDiscordIdAndEndedAtIsNullOrderByRankDesc(link.getDiscordId()));
     }
 
     @Transactional
     public void subscribe(long discordId, long promotedBy, int rank) {
-        activeRepository.findByDiscordIdAndRank(discordId, rank)
+        subscriptionRepository.findByDiscordIdAndRankAndEndedAtIsNull(discordId, rank)
                 .ifPresent(old -> {
                     archive(old);
-                    activeRepository.flush();
+                    subscriptionRepository.flush();
                 });
 
-        activeRepository.save(new ActiveBoostySubscriberEntity(discordId, promotedBy, rank));
+        subscriptionRepository.save(new BoostySubscriptionEntity(discordId, promotedBy, rank));
     }
 
     @Transactional
     public void unsubscribe(long discordId, int rank) {
-        activeRepository.findByDiscordIdAndRank(discordId, rank)
+        subscriptionRepository.findByDiscordIdAndRankAndEndedAtIsNull(discordId, rank)
                 .ifPresent(this::archive);
     }
 
-    private void archive(ActiveBoostySubscriberEntity active) {
-        UUID ss14Id = discordLinkRepository.findByDiscordId(active.getDiscordId())
-                .map(DiscordLinkedAccountEntity::getSs14UserId)
-                .orElse(new UUID(0L, 0L));
-
-        expiredRepository.save(new ExpiredBoostySubscriberEntity(
-                ss14Id,
-                active.getDiscordId(),
-                active.getRank(),
-                active.getPromotedById(),
-                active.getStartedAt()));
-
-        activeRepository.delete(active);
+    private void archive(BoostySubscriptionEntity active) {
+        active.end();
     }
 }

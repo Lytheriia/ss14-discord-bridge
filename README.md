@@ -34,6 +34,7 @@
 - **Boosty reconciliation**: an hourly job compares active Boosty subscriptions with Discord roles
   and fixes any differences, including changes made while the bot was offline.
 - **Antag tokens**: an hourly job gives active Boosty sponsors tokens for their highest tier, at most once in 7 days.
+  Allowed roles can also give tokens with `/tokens give`.
 - **Server presence**: the bot status shows online players, round time and map, refreshed every 30 seconds.
 - **Round statistics**: player count snapshots are stored and rendered as charts with `/stats`.
 - **Command permissions**: admins can grant specific commands to roles.
@@ -46,6 +47,7 @@
 | Command             | Access          | Description                                       |
 | ------------------- | --------------- | ------------------------------------------------- |
 | `/stats`            | Allowed roles   | Round statistics                                  |
+| `/tokens give`      | Allowed roles   | Give antag tokens to a member                     |
 | `/link-setup`       | Administrator   | Post the account linking message to a channel     |
 | `/addpermission`    | Administrator   | Allow a role to use a command                     |
 | `/removepermission` | Administrator   | Revoke a role's access to a command               |

@@ -15,7 +15,8 @@ import net.dv8tion.jda.api.entities.Role;
 public class CommandPermissionService {
 
     public static final List<String> MANAGED = List.of(
-            "stats"
+            "stats",
+            "tokens"
         );
 
     private final CommandPermissionRepository repo;

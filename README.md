@@ -138,8 +138,25 @@ All settings are read from environment variables (see `.env.example`).
 | `POSTGRES_USER`            | Database user                                                         |
 | `POSTGRES_PASSWORD`        | Database password                                                     |
 | `POSTGRES_PORT`            | Postgres port exposed on `127.0.0.1`                                  |
-| `POSTGRES_DATA_DIR`        | Host directory with the Postgres data (default `~/erida-bot`)         |
+| `POSTGRES_DATA_DIR`        | Required. Host directory with the Postgres data                       |
 | `REDIS_PORT`               | Redis port exposed on `127.0.0.1`                                     |
+
+</details>
+
+<details>
+<summary>Moving the database from ~/erida-bot</summary>
+
+`POSTGRES_DATA_DIR` no longer has a default, so Compose stops with an error until it is set.
+If your data is still in `~/erida-bot`, back it up and move it:
+
+1. Stop the services: `docker compose stop backend postgres`
+2. Create the parent directory: `sudo mkdir -p /srv/ss14-discord-bridge`
+3. Move the data: `sudo mv ~/erida-bot /srv/ss14-discord-bridge/postgres`
+4. Set `POSTGRES_DATA_DIR=/srv/ss14-discord-bridge/postgres` in `.env`
+5. Start the services: `docker compose up -d`
+
+Use `sudo rsync -a` instead of `mv` when moving to another disk, so the file owner is kept.
+Check that the existing data is there before deleting any old copy.
 
 </details>
 

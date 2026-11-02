@@ -7,11 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
@@ -29,7 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
-import lytheriia.bot.db.entity.RoundSnapshotEntity;
+import lytheriia.bot.db.repository.RoundSnapshotBucket;
 import lytheriia.bot.discord.DiscordColors;
 import lytheriia.bot.service.RoundSnapshotService;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -65,6 +62,7 @@ public class StatsCommand extends ListenerAdapter {
     private static final int DEFAULT_DAYS = 1;
     private static final int MAX_DAYS = 90;
     private static final int TARGET_POINTS = 400;
+    private static final long MIN_BUCKET_SECONDS = 30;
 
     private final RoundSnapshotService snapshotService;
     private final TaskExecutor executor;
@@ -95,7 +93,7 @@ public class StatsCommand extends ListenerAdapter {
         executor.execute(() -> {
             try {
                 event.getHook().sendMessage(render(days, userId)).queue();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Stats render error", e);
                 event.getHook().sendMessage("Не удалось построить график.").queue();
             }
@@ -189,7 +187,7 @@ public class StatsCommand extends ListenerAdapter {
                         .editOriginal(MessageEditData.fromCreateData(render(days, ownerId)))
                         .queue();
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Stats render error", e);
                 event.getHook().sendMessage("Не удалось построить график.")
                         .setEphemeral(true).queue();
@@ -213,7 +211,8 @@ public class StatsCommand extends ListenerAdapter {
         MessageCreateBuilder message = new MessageCreateBuilder()
                 .setComponents(ActionRow.of(button));
 
-        List<RoundSnapshotEntity> data = snapshotService.findLastDays(days);
+        long bucketSeconds = Math.max(MIN_BUCKET_SECONDS, Duration.ofDays(days).toSeconds() / TARGET_POINTS);
+        List<RoundSnapshotBucket> data = snapshotService.findAverages(days, bucketSeconds);
 
         if (data.isEmpty()) {
             return message.setContent("За последние " + days + " дн. данных нет.").build();
@@ -234,19 +233,11 @@ public class StatsCommand extends ListenerAdapter {
                 .build();
     }
 
-    private byte[] renderChart(List<RoundSnapshotEntity> data, int days) throws IOException {
-        long bucketMs = Math.max(30_000L, Duration.ofDays(days).toMillis() / TARGET_POINTS);
-
-        Map<Long, double[]> buckets = new TreeMap<>();
-        for (RoundSnapshotEntity s : data) {
-            long ms = s.getTimeStamp().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            double[] acc = buckets.computeIfAbsent(ms / bucketMs, k -> new double[2]);
-            acc[0] += s.getPlayers();
-            acc[1]++;
-        }
-
+    private byte[] renderChart(List<RoundSnapshotBucket> data, int days) throws IOException {
         TimeSeries series = new TimeSeries("Игроки");
-        buckets.forEach((key, acc) -> series.addOrUpdate(new Millisecond(new Date(key * bucketMs)), acc[0] / acc[1]));
+        for (RoundSnapshotBucket bucket : data) {
+            series.addOrUpdate(new Millisecond(Date.from(bucket.getBucket())), bucket.getPlayers());
+        }
 
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 null, null, "Игроки", new TimeSeriesCollection(series), false, false, false);

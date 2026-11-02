@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import lytheriia.bot.config.DiscordProperties;
 import lytheriia.bot.service.DiscordAccountInfoService;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleAddEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRoleRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -18,7 +19,12 @@ public class VerificationRoleListener extends ListenerAdapter {
     public VerificationRoleListener(DiscordAccountInfoService accountService, DiscordProperties props) {
         this.accountService = accountService;
 
-        this.verifiedRoleId = props.getRoles().getVerified();
+        this.verifiedRoleId = props.roles().verified();
+    }
+
+    @Override
+    public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
+        accountService.clearVerified(event.getUser().getIdLong());
     }
 
     @Override

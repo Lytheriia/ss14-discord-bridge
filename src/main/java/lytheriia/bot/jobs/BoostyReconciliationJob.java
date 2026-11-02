@@ -32,8 +32,8 @@ public class BoostyReconciliationJob {
     private final long botId;
 
     public BoostyReconciliationJob(DiscordProperties props, BoostySubscriptionService boostyService, JDA jda) {
-        this.boostyRoleIds = props.getRoles().boostyRolesByRank();
-        this.guildId = props.getGuildId();
+        this.boostyRoleIds = props.roles().boostyRolesByRank();
+        this.guildId = props.guildId();
         this.boostyService = boostyService;
         this.jda = jda;
         this.botId = jda.getSelfUser().getIdLong();

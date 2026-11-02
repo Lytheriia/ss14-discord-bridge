@@ -37,6 +37,7 @@
   Allowed roles can also give tokens with `/tokens give`.
 - **Server presence**: the bot status shows online players, round time and map, refreshed every 30 seconds.
 - **Round statistics**: player count snapshots are stored and rendered as charts with `/stats`.
+  A daily job can delete old snapshots if `STATS_RETENTION_DAYS` is set.
 - **Command permissions**: admins can grant specific commands to roles.
 
 </details>
@@ -107,7 +108,7 @@ Maven is not required: the repository ships the Maven wrapper (`./mvnw`).
 | Command                      | Action                  |
 | ---------------------------- | ----------------------- |
 | `./mvnw -q compile`          | Compile                 |
-| `./mvnw test`                | Run tests               |
+| `./mvnw test`                | Run tests; needs Docker |
 | `./mvnw package -DskipTests` | Build the jar           |
 
 Database schema changes go through Flyway migrations in `src/main/resources/db/migration`.
@@ -129,6 +130,7 @@ All settings are read from environment variables (see `.env.example`).
 | `DISCORD_BOOSTER_ROLE_ID`  | ID of the server booster role                                         |
 | `DISCORD_BOOSTY_ROLES`     | Boosty rank role IDs, comma-separated, lowest rank first; append only |
 | `BOOSTY_WEEKLY_TOKENS`     | Weekly tokens per Boosty rank, comma-separated, lowest rank first     |
+| `STATS_RETENTION_DAYS`     | Days to keep round snapshots, at least 90; empty keeps them forever   |
 | `INTERNAL_API_KEY`         | Shared secret for the internal API                                    |
 | `API_PORT`                 | API port                                                              |
 | `API_BIND_HOST`            | `127.0.0.1` if the game server is on the same machine, else `0.0.0.0` |

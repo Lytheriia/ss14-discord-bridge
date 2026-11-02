@@ -13,7 +13,7 @@ public class AutoLeaveFromServers extends ListenerAdapter {
     private final long allowedGuildId;
 
     public AutoLeaveFromServers(DiscordProperties props) {
-        this.allowedGuildId = props.getGuildId();
+        this.allowedGuildId = props.guildId();
     }
 
     @Override

@@ -1,80 +1,33 @@
 package lytheriia.bot.config;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
-@Component
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+@Validated
 @ConfigurationProperties(prefix = "discord")
-public class DiscordProperties {
-    private String token;
-    private Long guildId;
-    private Roles roles = new Roles();
-    private Long maintainerId;
+public record DiscordProperties(
+        @NotBlank String token,
+        @NotNull Long guildId,
+        @NotNull @Valid Roles roles,
+        @NotNull Long maintainerId) {
 
-    public Roles getRoles() {
-        return roles;
+    @Override
+    public String toString() {
+        return "DiscordProperties[guildId=" + guildId + ", roles=" + roles + ", maintainerId=" + maintainerId + "]";
     }
 
-    public void setRoles(Roles roles) {
-        this.roles = roles;
-    }
+    public record Roles(@NotNull Long verified, @NotNull Long booster, List<Long> boosty) {
 
-    public Long getGuildId() {
-        return guildId;
-    }
-
-    public void setGuildId(Long guildId) {
-        this.guildId = guildId;
-    }
-
-    public Long getMaintainerId() {
-        return maintainerId;
-    }
-
-    public void setMaintainerId(Long maintainerId) {
-        this.maintainerId = maintainerId;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public static class Roles {
-        private Long verified;
-        private Long booster;
-        private List<Long> boosty = new ArrayList<>();
-
-        public Long getVerified() {
-            return verified;
-        }
-
-        public void setVerified(Long verified) {
-            this.verified = verified;
-        }
-
-        public Long getBooster() {
-            return booster;
-        }
-
-        public void setBooster(Long booster) {
-            this.booster = booster;
-        }
-
-        public List<Long> getBoosty() {
-            return boosty;
-        }
-
-        public void setBoosty(List<Long> boosty) {
-            this.boosty = boosty;
+        public Roles {
+            boosty = boosty == null ? List.of() : List.copyOf(boosty);
         }
 
         public Map<Integer, Long> boostyRolesByRank() {
@@ -86,6 +39,5 @@ public class DiscordProperties {
 
             return Map.copyOf(rolesByRank);
         }
-
     }
 }

@@ -3,16 +3,15 @@ package lytheriia.bot.api.security;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lytheriia.bot.config.ApiProperties;
 import jakarta.servlet.ServletException;
 
 @Component
@@ -28,14 +27,10 @@ public class InternalApiKeyFilter extends OncePerRequestFilter {
     private final byte[] expectedKey;
     private final Set<String> allowedIps;
 
-    public InternalApiKeyFilter(@Value("${internal.api.key}") String apiKey,
-            @Value("${api.allowed-ips:}") List<String> allowedIps) {
-
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("internal.api.key must not be empty");
-        }
-        this.expectedKey = apiKey.getBytes(StandardCharsets.UTF_8);
-        this.allowedIps = Set.copyOf(allowedIps.stream().map(String::trim).filter(s -> !s.isEmpty()).toList());
+    public InternalApiKeyFilter(ApiProperties properties) {
+        this.expectedKey = properties.key().getBytes(StandardCharsets.UTF_8);
+        this.allowedIps = Set.copyOf(
+                properties.allowedIps().stream().map(String::trim).filter(s -> !s.isEmpty()).toList());
     }
 
     @Override

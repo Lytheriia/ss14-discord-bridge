@@ -36,6 +36,16 @@ public class DiscordAccountInfoService {
         getOrCreate(discordId).setBooster(booster);
     }
 
+    @Transactional
+    public void clearVerified(long discordId) {
+        infoRepository.findByDiscordId(discordId).ifPresent(info -> info.setVerified(false));
+    }
+
+    @Transactional
+    public void clearBooster(long discordId) {
+        infoRepository.findByDiscordId(discordId).ifPresent(info -> info.setBooster(false));
+    }
+
     private DiscordAccountInfoEntity getOrCreate(long discordId) {
         return infoRepository.findByDiscordId(discordId).orElseGet(() -> {
             return infoRepository.save(new DiscordAccountInfoEntity(discordId));

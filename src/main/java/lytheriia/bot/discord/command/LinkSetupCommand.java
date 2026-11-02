@@ -1,5 +1,7 @@
 package lytheriia.bot.discord.command;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import lytheriia.bot.discord.DiscordColors;
@@ -7,6 +9,8 @@ import lytheriia.bot.service.DiscordLinkingService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -21,6 +25,8 @@ import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 
 @Component
 public class LinkSetupCommand extends ListenerAdapter {
+
+        private static final Logger log = LoggerFactory.getLogger(LinkSetupCommand.class);
 
         private static final String COMMAND = "link-setup";
         private static final String BUTTON_ID = "link:open";
@@ -37,6 +43,12 @@ public class LinkSetupCommand extends ListenerAdapter {
         public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
                 if (!event.getName().equals(COMMAND))
                         return;
+
+                Member member = event.getMember();
+                if (member == null || !member.hasPermission(Permission.ADMINISTRATOR)) {
+                        event.reply("Эта команда доступна только администраторам.").setEphemeral(true).queue();
+                        return;
+                }
 
                 TextChannel channel = event.getOption("channel", o -> o.getAsChannel().asTextChannel());
                 if (channel == null) {
@@ -93,7 +105,14 @@ public class LinkSetupCommand extends ListenerAdapter {
 
                 event.deferReply(true).queue();
 
-                DiscordLinkingService.Result result = linkService.link(event.getUser().getIdLong(), code);
+                DiscordLinkingService.Result result;
+                try {
+                        result = linkService.link(event.getUser().getIdLong(), code);
+                } catch (Exception e) {
+                        log.error("Failed to link discordId={}", event.getUser().getIdLong(), e);
+                        event.getHook().sendMessage("❌ Не удалось привязать аккаунт. Попробуйте ещё раз позже.").queue();
+                        return;
+                }
 
                 String text = switch (result) {
                         case LINKED -> "✅ Аккаунт успешно привязан.";

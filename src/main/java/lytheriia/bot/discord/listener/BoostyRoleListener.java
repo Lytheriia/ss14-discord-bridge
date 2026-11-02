@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import lytheriia.bot.config.DiscordProperties;
 import lytheriia.bot.service.BoostySubscriptionService;
-import lytheriia.bot.service.DiscordAccountInfoService;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
@@ -35,15 +34,11 @@ public class BoostyRoleListener extends ListenerAdapter {
     private static final long AUDIT_MAX_AGE_SEC = 15;
 
     private final Map<Integer, Long> boostyRoleIds;
-    private final DiscordAccountInfoService accountService;
     private final BoostySubscriptionService boostyService;
 
-    public BoostyRoleListener(DiscordAccountInfoService accountService,
-            BoostySubscriptionService boostyService,
-            DiscordProperties props) {
-        this.accountService = accountService;
+    public BoostyRoleListener(BoostySubscriptionService boostyService, DiscordProperties props) {
         this.boostyService = boostyService;
-        this.boostyRoleIds = props.getRoles().boostyRolesByRank();
+        this.boostyRoleIds = props.roles().boostyRolesByRank();
 
         if (boostyRoleIds.isEmpty()) {
             log.warn("DISCORD_BOOSTY_ROLES is empty: Boosty roles will not be tracked");
@@ -99,12 +94,6 @@ public class BoostyRoleListener extends ListenerAdapter {
         }
 
         long discordId = event.getUser().getIdLong();
-
-        boolean hasBoostyRole = event.getMember().getRoles().stream()
-                .anyMatch(role -> boostyRoleIds.containsValue(role.getIdLong()));
-        if (!hasBoostyRole) {
-            accountService.setBooster(discordId, false);
-        }
 
         ranks.forEach(rank -> {
             try {

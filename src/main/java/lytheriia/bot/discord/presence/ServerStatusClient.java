@@ -11,8 +11,9 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import lytheriia.bot.config.Ss14Properties;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -27,9 +28,9 @@ public class ServerStatusClient {
     private final ObjectMapper mapper;
     private final String ip;
 
-    public ServerStatusClient(ObjectMapper mapper, @Value("${ss14.server-ip}") String ip) {
+    public ServerStatusClient(ObjectMapper mapper, Ss14Properties properties) {
         this.mapper = mapper;
-        this.ip = ip;
+        this.ip = properties.serverIp();
     }
 
     public Optional<ServerStatus> fetch() {

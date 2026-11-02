@@ -1,13 +1,18 @@
 package lytheriia.bot.service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import lytheriia.bot.db.entity.DiscordLinkEntity;
 import lytheriia.bot.db.repository.DiscordLinkRepository;
@@ -19,16 +24,20 @@ public class DiscordLinkingService {
         LINKED, ALREADY_LINKED, INVALID_CODE, ACCOUNT_TAKEN
     }
 
+    private static final Logger log = LoggerFactory.getLogger(DiscordLinkingService.class);
+
     private static final Duration TTL = Duration.ofMinutes(3);
     private final StringRedisTemplate redis;
     private final DiscordLinkRepository links;
     private final DiscordAccountInfoService info;
+    private final TransactionTemplate transactionTemplate;
 
     public DiscordLinkingService(StringRedisTemplate redis, DiscordLinkRepository links,
-            DiscordAccountInfoService info) {
+            DiscordAccountInfoService info, TransactionTemplate transactionTemplate) {
         this.redis = redis;
         this.links = links;
         this.info = info;
+        this.transactionTemplate = transactionTemplate;
     }
 
     private static String normalize(String code) {
@@ -50,22 +59,30 @@ public class DiscordLinkingService {
         if (links.existsByDiscordId(discordId))
             return Result.ALREADY_LINKED;
 
-        Optional<UUID> userId = consume(code);
-        if (userId.isEmpty())
+        Optional<UUID> found = findUserByCode(code);
+        if (found.isEmpty())
             return Result.INVALID_CODE;
 
-        if (links.existsBySs14UserId(userId.get()))
+        UUID userId = found.get();
+
+        if (links.existsBySs14UserId(userId)) {
+            deleteCode(code, userId);
             return Result.ACCOUNT_TAKEN;
+        }
 
         try {
-            links.save(new DiscordLinkEntity(discordId, userId.get()));
-
-            info.createIfMissing(discordId);
-
-            return Result.LINKED;
+            // The code stays in Redis until the commit, so a database failure does not burn it.
+            // A concurrent use of the same code is stopped by the unique ss14_user_id.
+            transactionTemplate.executeWithoutResult(status -> {
+                links.save(new DiscordLinkEntity(discordId, userId));
+                info.createIfMissing(discordId);
+            });
         } catch (DataIntegrityViolationException e) {
             return Result.ACCOUNT_TAKEN;
         }
+
+        deleteCode(code, userId);
+        return Result.LINKED;
     }
 
     public void register(String code, UUID userId) {
@@ -82,17 +99,21 @@ public class DiscordLinkingService {
             redis.expire(codeKey, TTL);
         }
 
-        String oldCode = redis.opsForValue().getAndSet(userKey, code);
-        redis.expire(userKey, TTL);
+        String oldCode = redis.opsForValue().setGet(userKey, code, TTL);
         if (oldCode != null && !oldCode.equals(code))
             redis.delete("link:code:" + oldCode);
     }
 
-    public Optional<UUID> consume(String code) {
-        String userId = redis.opsForValue().getAndDelete("link:code:" + normalize(code));
-        if (userId == null)
-            return Optional.empty();
-        redis.delete("link:user:" + userId);
-        return Optional.of(UUID.fromString(userId));
+    private Optional<UUID> findUserByCode(String code) {
+        return Optional.ofNullable(redis.opsForValue().get("link:code:" + code)).map(UUID::fromString);
+    }
+
+    private void deleteCode(String code, UUID userId) {
+        try {
+            redis.delete(List.of("link:code:" + code, "link:user:" + userId));
+        } catch (DataAccessException e) {
+            // Already linked at this point; the keys expire by TTL and a reused code gets ACCOUNT_TAKEN.
+            log.warn("Failed to delete linking code of userId={}", userId, e);
+        }
     }
 }

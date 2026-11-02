@@ -40,11 +40,11 @@ public class SyncRolesCommand extends ListenerAdapter {
             DiscordAccountInfoService accountService,
             @Qualifier("applicationTaskExecutor") TaskExecutor executor) {
 
-        DiscordProperties.Roles roles = props.getRoles();
+        DiscordProperties.Roles roles = props.roles();
 
-        this.maintainerId = props.getMaintainerId();
-        this.verifiedRoleId = roles.getVerified();
-        this.boosterRoleId = roles.getBooster();
+        this.maintainerId = props.maintainerId();
+        this.verifiedRoleId = roles.verified();
+        this.boosterRoleId = roles.booster();
         this.accountService = accountService;
         this.executor = executor;
     }

@@ -42,7 +42,7 @@ public class JdaConfig {
             List<ListenerAdapter> listeners, CommandDispatcher commandDispatcher)
             throws InterruptedException {
 
-        JDA jda = JDABuilder.createLight(props.getToken())
+        JDA jda = JDABuilder.createLight(props.token())
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.customStatus("Запуск..."))
                 .enableIntents(GatewayIntent.GUILD_MEMBERS)
@@ -52,7 +52,7 @@ public class JdaConfig {
                 .build()
                 .awaitReady();
 
-        long guildId = props.getGuildId();
+        long guildId = props.guildId();
 
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) {

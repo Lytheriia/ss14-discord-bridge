@@ -1,6 +1,6 @@
 spring:
   application:
-    name: bot-backend
+    name: ss14-discord-bridge
   task:
     scheduling:
       pool-size: 2
@@ -34,10 +34,10 @@ discord:
     verified: ${DISCORD_VERIFIED_ROLE_ID}
     booster: ${DISCORD_BOOSTER_ROLE_ID}
     boosty: ${DISCORD_BOOSTY_ROLES:}
-  developer-id: ${DISCORD_MAINTAINER_ID}
+  maintainer-id: ${DISCORD_MAINTAINER_ID}
 
-sponsorship:
-  weekly-tokens: ${SPONSOR_WEEKLY_TOKENS:}
+boosty:
+  weekly-tokens: ${BOOSTY_WEEKLY_TOKENS:}
 
 management:
   endpoints:

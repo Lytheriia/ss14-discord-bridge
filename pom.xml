@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>lytheriia</groupId>
-    <artifactId>bot</artifactId>
+    <artifactId>ss14-discord-bridge</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name/>
     <description/>

@@ -5,17 +5,17 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import lytheriia.bot.db.entity.DiscordLinkedAccountEntity;
+import lytheriia.bot.db.entity.DiscordLinkEntity;
 
-public interface DiscordLinkRepository extends JpaRepository<DiscordLinkedAccountEntity, Long> {
+public interface DiscordLinkRepository extends JpaRepository<DiscordLinkEntity, Long> {
 
     boolean existsByDiscordId(long discordId);
 
     boolean existsBySs14UserId(UUID ss14UserId);
 
-    Optional<DiscordLinkedAccountEntity> findByDiscordId(long discordId);
+    Optional<DiscordLinkEntity> findByDiscordId(long discordId);
 
-    Optional<DiscordLinkedAccountEntity> findBySs14UserId(UUID ss14UserId);
+    Optional<DiscordLinkEntity> findBySs14UserId(UUID ss14UserId);
 
     long deleteByDiscordId(long discordId);
 }

@@ -14,38 +14,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import lytheriia.bot.db.repository.DiscordLinkRepository;
-import lytheriia.bot.db.service.DiscordLinkingService;
+import lytheriia.bot.api.dto.LinkStatus;
+import lytheriia.bot.api.dto.RegisterCodeRequest;
+import lytheriia.bot.service.DiscordLinkingService;
 
 @RestController
 @RequestMapping("/api/link")
 public class DiscordLinkingController {
 
-    public record RegisterCodeRequest(
-            @NotNull @Pattern(regexp = "^[A-Za-z0-9-]{8,36}$") String code,
-            @NotNull UUID userId) {
-    }
+    private final DiscordLinkingService linkingService;
 
-    public record LinkStatus(boolean linked, String discordId) {
-    }
-
-    private final DiscordLinkingService codes;
-    private final DiscordLinkRepository links;
-
-    public DiscordLinkingController(DiscordLinkingService codes, DiscordLinkRepository links) {
-        this.codes = codes;
-        this.links = links;
+    public DiscordLinkingController(DiscordLinkingService linkingService) {
+        this.linkingService = linkingService;
     }
 
     @PostMapping("/codes")
     public ResponseEntity<?> registerCode(@Valid @RequestBody RegisterCodeRequest req) {
-        if (links.existsBySs14UserId(req.userId())) {
+        if (linkingService.isLinked(req.userId())) {
             return error(HttpStatus.CONFLICT, "ALREADY_LINKED");
         }
         try {
-            codes.register(req.code(), req.userId());
+            linkingService.register(req.code(), req.userId());
             return ResponseEntity.noContent().build();
         } catch (IllegalStateException e) {
             return error(HttpStatus.CONFLICT, "CODE_COLLISION");
@@ -56,7 +45,7 @@ public class DiscordLinkingController {
 
     @GetMapping("/{userId}")
     public LinkStatus status(@PathVariable UUID userId) {
-        return links.findBySs14UserId(userId)
+        return linkingService.findLink(userId)
                 .map(l -> new LinkStatus(true, String.valueOf(l.getDiscordId())))
                 .orElse(new LinkStatus(false, null));
     }

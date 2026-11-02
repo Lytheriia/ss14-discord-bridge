@@ -33,7 +33,7 @@
 - **Role sync**: verified, server booster and Boosty roles are tracked in the database and exposed to the game server.
 - **Boosty reconciliation**: an hourly job compares active Boosty subscriptions with Discord roles
   and fixes any differences, including changes made while the bot was offline.
-- **Antag tokens**: an hourly job gives active Boosty sponsors tokens for their highest tier, at most once in 7 days.
+- **Antag tokens**: an hourly job gives active Boosty subscribers tokens for their highest rank, at most once in 7 days.
   Allowed roles can also give tokens with `/tokens give`.
 - **Server presence**: the bot status shows online players, round time and map, refreshed every 30 seconds.
 - **Round statistics**: player count snapshots are stored and rendered as charts with `/stats`.
@@ -52,7 +52,7 @@
 | `/addpermission`    | Administrator   | Allow a role to use a command                     |
 | `/removepermission` | Administrator   | Revoke a role's access to a command               |
 | `/listpermissions`  | Administrator   | Show which roles can use a command                |
-| `/syncdbroles`      | Developer       | Sync Discord roles with the database              |
+| `/syncdbroles`      | Maintainer      | Sync Discord roles with the database              |
 
 </details>
 
@@ -65,7 +65,7 @@ Every request must carry the `X-Internal-Api-Key` header. If `API_ALLOWED_IPS` i
 | ------ | --------------------- | ------------------------------------------------------------ |
 | `POST` | `/api/link/codes`     | Register a linking code: `204`, `409 ALREADY_LINKED`, `503`  |
 | `GET`  | `/api/link/{userId}`  | Link status of an SS14 user                                  |
-| `GET`  | `/api/boosty/{user}`  | Boosty sponsor status of an SS14 user                        |
+| `GET`  | `/api/boosty/{user}`  | Boosty status of an SS14 user                                |
 | `GET`  | `/actuator/health`    | Health check (no key required)                               |
 
 </details>
@@ -124,11 +124,11 @@ All settings are read from environment variables (see `.env.example`).
 | -------------------------- | --------------------------------------------------------------------- |
 | `DISCORD_TOKEN`            | Bot token                                                             |
 | `DISCORD_GUILD_ID`         | The only guild the bot stays in                                       |
-| `DISCORD_MAINTAINER_ID`    | Discord user ID allowed to run developer-only commands                |
+| `DISCORD_MAINTAINER_ID`    | Discord user ID allowed to run maintainer-only commands               |
 | `DISCORD_VERIFIED_ROLE_ID` | ID of the role given to verified members                              |
 | `DISCORD_BOOSTER_ROLE_ID`  | ID of the server booster role                                         |
-| `DISCORD_BOOSTY_ROLES`     | Boosty tier role IDs, comma-separated, lowest tier first; append only |
-| `SPONSOR_WEEKLY_TOKENS`    | Weekly tokens per Boosty tier, comma-separated, lowest tier first     |
+| `DISCORD_BOOSTY_ROLES`     | Boosty rank role IDs, comma-separated, lowest rank first; append only |
+| `BOOSTY_WEEKLY_TOKENS`     | Weekly tokens per Boosty rank, comma-separated, lowest rank first     |
 | `INTERNAL_API_KEY`         | Shared secret for the internal API                                    |
 | `API_PORT`                 | API port                                                              |
 | `API_BIND_HOST`            | `127.0.0.1` if the game server is on the same machine, else `0.0.0.0` |

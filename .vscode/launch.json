@@ -6,7 +6,7 @@
       "name": "Bot (local)",
       "request": "launch",
       "mainClass": "lytheriia.bot.BotApplication",
-      "projectName": "bot",
+      "projectName": "ss14-discord-bridge",
       "envFile": "${workspaceFolder}/.env",
       "env": {
         "SPRING_DATA_REDIS_HOST": "localhost",

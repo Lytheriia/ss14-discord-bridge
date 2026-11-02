@@ -33,6 +33,7 @@
 - **Role sync**: verified, server booster and Boosty roles are tracked in the database and exposed to the game server.
 - **Boosty reconciliation**: an hourly job compares active Boosty subscriptions with Discord roles
   and fixes any differences, including changes made while the bot was offline.
+- **Antag tokens**: an hourly job gives active Boosty sponsors tokens for their highest tier, at most once in 7 days.
 - **Server presence**: the bot status shows online players, round time and map, refreshed every 30 seconds.
 - **Round statistics**: player count snapshots are stored and rendered as charts with `/stats`.
 - **Command permissions**: admins can grant specific commands to roles.
@@ -125,6 +126,7 @@ All settings are read from environment variables (see `.env.example`).
 | `DISCORD_VERIFIED_ROLE_ID` | ID of the role given to verified members                              |
 | `DISCORD_BOOSTER_ROLE_ID`  | ID of the server booster role                                         |
 | `DISCORD_BOOSTY_ROLES`     | Boosty tier role IDs, comma-separated, lowest tier first; append only |
+| `SPONSOR_WEEKLY_TOKENS`    | Weekly tokens per Boosty tier, comma-separated, lowest tier first     |
 | `INTERNAL_API_KEY`         | Shared secret for the internal API                                    |
 | `API_PORT`                 | API port                                                              |
 | `API_BIND_HOST`            | `127.0.0.1` if the game server is on the same machine, else `0.0.0.0` |

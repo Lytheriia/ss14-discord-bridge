@@ -1,6 +1,7 @@
 package lytheriia.bot.db.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -87,6 +88,15 @@ public class BoostySubscriberService {
         return subscriptionRepository.findByEndedAtIsNull().stream()
                 .map(BoostySubscriptionEntity::getDiscordId)
                 .collect(Collectors.toSet());
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Integer> findHighestActiveRanks() {
+        return subscriptionRepository.findByEndedAtIsNull().stream()
+                .collect(Collectors.toMap(
+                        BoostySubscriptionEntity::getDiscordId,
+                        BoostySubscriptionEntity::getRank,
+                        Math::max));
     }
 
     private void archive(BoostySubscriptionEntity active) {

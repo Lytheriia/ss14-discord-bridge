@@ -36,6 +36,9 @@ discord:
     boosty: ${DISCORD_BOOSTY_ROLES:}
   developer-id: ${DISCORD_MAINTAINER_ID}
 
+sponsorship:
+  weekly-tokens: ${SPONSOR_WEEKLY_TOKENS:}
+
 management:
   endpoints:
     web:

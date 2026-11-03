@@ -19,7 +19,8 @@ class PropertiesValidationTest {
             .withUserConfiguration(Config.class)
             .withPropertyValues("api.key=secret-key", "ss14.server-ip=127.0.0.1:1");
 
-    @EnableConfigurationProperties({ DiscordProperties.class, ApiProperties.class, StatsProperties.class })
+    @EnableConfigurationProperties({ DiscordProperties.class, ApiProperties.class, StatsProperties.class,
+            BoostyProperties.class })
     static class Config {
     }
 
@@ -31,6 +32,19 @@ class PropertiesValidationTest {
             assertThat(context.getBean(ApiProperties.class).toString()).doesNotContain("secret-key");
             assertThat(context.getBean(StatsProperties.class).retentionDays()).isNull();
         });
+    }
+
+    @Test
+    void emptyBoostySettingsUseDefaults() {
+        runner.withPropertyValues(VALID_DISCORD)
+                .withPropertyValues("boosty.weekly-tokens=", "boosty.weekly-token-cap=", "boosty.purchase-ttl-minutes=")
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    BoostyProperties boosty = context.getBean(BoostyProperties.class);
+                    assertThat(boosty.weeklyTokens()).isEmpty();
+                    assertThat(boosty.weeklyTokenCap()).isEqualTo(4);
+                    assertThat(boosty.purchaseTtlMinutes()).isEqualTo(60);
+                });
     }
 
     @Test

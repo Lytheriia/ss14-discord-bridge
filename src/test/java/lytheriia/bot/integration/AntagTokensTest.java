@@ -68,7 +68,35 @@ class AntagTokensTest extends IntegrationTest {
 
         jdbc.update("UPDATE antag_tokens SET last_weekly_grant_at = now() - INTERVAL '8 days' WHERE discord_id = 1");
         job.grantWeeklyTokens();
+        assertThat(balance(1)).isEqualTo(4);
+    }
+
+    @Test
+    void grantAtCapKeepsBalanceAndDoesNotUseTheWeek() {
+        tokens.give(1, 6);
+        jdbc.update("UPDATE antag_tokens SET last_weekly_grant_at = now() - INTERVAL '8 days' WHERE discord_id = 1");
+        Timestamp before = lastGrant(1);
+
+        assertThat(tokens.grantWeekly(1, 3)).isFalse();
+
         assertThat(balance(1)).isEqualTo(6);
+        assertThat(lastGrant(1)).isEqualTo(before);
+    }
+
+    @Test
+    void grantBelowCapStopsAtCap() {
+        tokens.give(1, 3);
+
+        assertThat(tokens.grantWeekly(1, 3)).isTrue();
+
+        assertThat(balance(1)).isEqualTo(4);
+    }
+
+    @Test
+    void firstWeeklyGrantRespectsCap() {
+        tokens.grantWeekly(1, 9);
+
+        assertThat(balance(1)).isEqualTo(4);
     }
 
     @Test
@@ -84,11 +112,11 @@ class AntagTokensTest extends IntegrationTest {
 
     @Test
     void manualGiveDoesNotBlockFirstWeeklyGrant() {
-        tokens.give(1, 5);
+        tokens.give(1, 2);
 
         assertThat(tokens.grantWeekly(1, 1)).isTrue();
         assertThat(tokens.grantWeekly(1, 1)).isFalse();
-        assertThat(balance(1)).isEqualTo(6);
+        assertThat(balance(1)).isEqualTo(3);
     }
 
     @Test

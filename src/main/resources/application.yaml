@@ -37,6 +37,8 @@ discord:
 
 boosty:
   weekly-tokens: ${BOOSTY_WEEKLY_TOKENS:}
+  weekly-token-cap: ${BOOSTY_WEEKLY_TOKEN_CAP:}
+  purchase-ttl-minutes: ${BOOSTY_PURCHASE_TTL_MINUTES:}
 
 management:
   endpoints:

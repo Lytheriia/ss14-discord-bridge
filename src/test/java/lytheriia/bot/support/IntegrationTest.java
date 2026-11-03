@@ -20,6 +20,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
         "discord.roles.booster=3",
         "discord.roles.boosty=11,22,33",
         "boosty.weekly-tokens=0,1,3",
+        "boosty.weekly-token-cap=4",
+        "boosty.purchase-ttl-minutes=60",
         "api.key=" + IntegrationTest.API_KEY,
         "api.allowed-ips=",
         "ss14.server-ip=127.0.0.1:1",
@@ -58,7 +60,7 @@ public abstract class IntegrationTest {
 
     @BeforeEach
     void cleanStorage() {
-        jdbc.execute("TRUNCATE antag_tokens, boosty_subscription, discord_linked_accounts, discord_account_info, "
+        jdbc.execute("TRUNCATE antag_tokens, antag_token_purchase, boosty_subscription, discord_linked_accounts, discord_account_info, "
                 + "round_snapshots");
         redis.getConnectionFactory().getConnection().serverCommands().flushAll();
     }

@@ -33,8 +33,11 @@
 - **Role sync**: verified, server booster and Boosty roles are tracked in the database and exposed to the game server.
 - **Boosty reconciliation**: an hourly job compares active Boosty subscriptions with Discord roles
   and fixes any differences, including changes made while the bot was offline.
-- **Antag tokens**: an hourly job gives active Boosty subscribers tokens for their highest rank, at most once in 7 days.
+- **Antag tokens**: an hourly job gives active Boosty subscribers tokens for their highest rank, at most once in 7 days,
+  up to `BOOSTY_WEEKLY_TOKEN_CAP`; at the cap the week is not used up.
   Allowed roles can also give tokens with `/tokens give`.
+  Game servers spend tokens through the internal API; a purchase that is not granted returns its token.
+  An hourly job refunds purchases still waiting after `BOOSTY_PURCHASE_TTL_MINUTES`.
 - **Server presence**: the bot status shows online players, round time and map, refreshed every 30 seconds.
 - **Round statistics**: player count snapshots are stored and rendered as charts with `/stats`.
   A daily job can delete old snapshots if `STATS_RETENTION_DAYS` is set.
@@ -60,14 +63,20 @@
 <details>
 <summary>Internal API</summary>
 
-Every request must carry the `X-Internal-Api-Key` header. If `API_ALLOWED_IPS` is set, only those addresses are accepted.
+Every request must carry the `X-Internal-Api-Key` header (otherwise `401`).
+If `API_ALLOWED_IPS` is set, only those addresses are accepted (otherwise `403`).
 
-| Method | Path                  | Description                                                  |
-| ------ | --------------------- | ------------------------------------------------------------ |
-| `POST` | `/api/link/codes`     | Register a linking code: `204`, `409 ALREADY_LINKED`, `503`  |
-| `GET`  | `/api/link/{userId}`  | Link status of an SS14 user                                  |
-| `GET`  | `/api/boosty/{user}`  | Boosty status of an SS14 user                                |
-| `GET`  | `/actuator/health`    | Health check (no key required)                               |
+| Method | Path                                            | Description                                                                                                                |
+| ------ | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/link/codes`                               | Register a linking code: `204`, `400`, `409 ALREADY_LINKED` / `CODE_COLLISION`, `503 STORAGE_UNAVAILABLE`                  |
+| `GET`  | `/api/link/{userId}`                            | Link status of an SS14 user                                                                                                |
+| `GET`  | `/api/boosty/{user}`                            | Boosty status of an SS14 user: `200`, `404` without a subscription                                                         |
+| `GET`  | `/api/tokens/{userId}`                          | Token balance and active purchase: `200`, `404 NOT_LINKED`                                                                 |
+| `POST` | `/api/tokens/{userId}/purchases`                | Buy with one token: `204`, `400`, `404 NOT_LINKED`, `409 INSUFFICIENT_TOKENS` / `ACTIVE_PURCHASE` / `PURCHASE_ID_CONFLICT` |
+| `POST` | `/api/tokens/purchases/{id}/grant`              | Mark a purchase as granted: `204`, `404`, `409 ALREADY_FINISHED`                                                           |
+| `POST` | `/api/tokens/purchases/{id}/refund`             | Return the token of a purchase: `204`, `404`, `409 ALREADY_FINISHED`                                                       |
+| `POST` | `/api/tokens/servers/{serverId}/refund-pending` | Refund all waiting purchases of a server: `200`                                                                            |
+| `GET`  | `/actuator/health`                              | Health check (no key required)                                                                                             |
 
 </details>
 
@@ -121,27 +130,29 @@ Never edit a migration that has already been applied; add a new `V<n>__*.sql` in
 
 All settings are read from environment variables (see `.env.example`).
 
-| Variable                   | Description                                                           |
-| -------------------------- | --------------------------------------------------------------------- |
-| `DISCORD_TOKEN`            | Bot token                                                             |
-| `DISCORD_GUILD_ID`         | The only guild the bot stays in                                       |
-| `DISCORD_MAINTAINER_ID`    | Discord user ID allowed to run maintainer-only commands               |
-| `DISCORD_VERIFIED_ROLE_ID` | ID of the role given to verified members                              |
-| `DISCORD_BOOSTER_ROLE_ID`  | ID of the server booster role                                         |
-| `DISCORD_BOOSTY_ROLES`     | Boosty rank role IDs, comma-separated, lowest rank first; append only |
-| `BOOSTY_WEEKLY_TOKENS`     | Weekly tokens per Boosty rank, comma-separated, lowest rank first     |
-| `STATS_RETENTION_DAYS`     | Days to keep round snapshots, at least 90; empty keeps them forever   |
-| `INTERNAL_API_KEY`         | Shared secret for the internal API                                    |
-| `API_PORT`                 | API port                                                              |
-| `API_BIND_HOST`            | `127.0.0.1` if the game server is on the same machine, else `0.0.0.0` |
-| `API_ALLOWED_IPS`          | Comma-separated IPs allowed to call the API; required with `0.0.0.0`  |
-| `SS14_SERVER_IP`           | `host:port` of the game server, used for the `/status` presence       |
-| `POSTGRES_DB`              | Database name                                                         |
-| `POSTGRES_USER`            | Database user                                                         |
-| `POSTGRES_PASSWORD`        | Database password                                                     |
-| `POSTGRES_PORT`            | Postgres port exposed on `127.0.0.1`                                  |
-| `POSTGRES_DATA_DIR`        | Required. Host directory with the Postgres data                       |
-| `REDIS_PORT`               | Redis port exposed on `127.0.0.1`                                     |
+| Variable                      | Description                                                           |
+| ----------------------------- | --------------------------------------------------------------------- |
+| `DISCORD_TOKEN`               | Bot token                                                             |
+| `DISCORD_GUILD_ID`            | The only guild the bot stays in                                       |
+| `DISCORD_MAINTAINER_ID`       | Discord user ID allowed to run maintainer-only commands               |
+| `DISCORD_VERIFIED_ROLE_ID`    | ID of the role given to verified members                              |
+| `DISCORD_BOOSTER_ROLE_ID`     | ID of the server booster role                                         |
+| `DISCORD_BOOSTY_ROLES`        | Boosty rank role IDs, comma-separated, lowest rank first; append only |
+| `BOOSTY_WEEKLY_TOKENS`        | Weekly tokens per Boosty rank, comma-separated, lowest rank first     |
+| `BOOSTY_WEEKLY_TOKEN_CAP`     | Balance where weekly grants stop, default 4                           |
+| `BOOSTY_PURCHASE_TTL_MINUTES` | Minutes until a waiting purchase is refunded, default 60              |
+| `STATS_RETENTION_DAYS`        | Days to keep round snapshots, at least 90; empty keeps them forever   |
+| `INTERNAL_API_KEY`            | Shared secret for the internal API                                    |
+| `API_PORT`                    | API port                                                              |
+| `API_BIND_HOST`               | `127.0.0.1` if the game server is on the same machine, else `0.0.0.0` |
+| `API_ALLOWED_IPS`             | Comma-separated IPs allowed to call the API; required with `0.0.0.0`  |
+| `SS14_SERVER_IP`              | `host:port` of the game server, used for the `/status` presence       |
+| `POSTGRES_DB`                 | Database name                                                         |
+| `POSTGRES_USER`               | Database user                                                         |
+| `POSTGRES_PASSWORD`           | Database password                                                     |
+| `POSTGRES_PORT`               | Postgres port exposed on `127.0.0.1`                                  |
+| `POSTGRES_DATA_DIR`           | Required. Host directory with the Postgres data                       |
+| `REDIS_PORT`                  | Redis port exposed on `127.0.0.1`                                     |
 
 </details>
 
